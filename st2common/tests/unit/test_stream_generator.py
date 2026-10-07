@@ -14,13 +14,12 @@
 # limitations under the License.
 
 import mock
-import unittest2
+import unittest
 
 from st2common.stream import listener
 
 
 class MockBody(object):
-
     def __init__(self, id):
         self.id = id
         self.status = "succeeded"
@@ -32,8 +31,7 @@ END_ID = "test_end_id"
 EVENTS = [(INCLUDE, MockBody("notend")), (END_EVENT, MockBody(END_ID))]
 
 
-class MockQueue():
-
+class MockQueue:
     def __init__(self):
         self.items = EVENTS
 
@@ -47,7 +45,6 @@ class MockQueue():
 
 
 class MockListener(listener.BaseListener):
-
     def __init__(self, *args, **kwargs):
         super(MockListener, self).__init__(*args, **kwargs)
 
@@ -55,20 +52,20 @@ class MockListener(listener.BaseListener):
         pass
 
 
-class TestStream(unittest2.TestCase):
-
-    @mock.patch('st2common.stream.listener.BaseListener._get_action_ref_for_body')
-    @mock.patch('eventlet.Queue')
-    def test_generator(self, mock_queue,
-            get_action_ref_for_body):
+class TestStream(unittest.TestCase):
+    @mock.patch("st2common.stream.listener.BaseListener._get_action_ref_for_body")
+    @mock.patch("st2common.util.concurrency.Queue")
+    def test_generator(self, mock_queue, get_action_ref_for_body):
         get_action_ref_for_body.return_value = None
         mock_queue.return_value = MockQueue()
         mock_consumer = MockListener(connection=None)
         mock_consumer._stopped = False
-        app_iter = mock_consumer.generator(events=INCLUDE,
+        app_iter = mock_consumer.generator(
+            events=INCLUDE,
             end_event=END_EVENT,
             end_statuses=["succeeded"],
-            end_execution_id=END_ID)
-        events = EVENTS.append('')
+            end_execution_id=END_ID,
+        )
+        events = EVENTS.append("")
         for index, val in enumerate(app_iter):
-            self.assertEquals(val, events[index])
+            self.assertEqual(val, events[index])
